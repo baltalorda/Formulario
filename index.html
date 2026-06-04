@@ -272,7 +272,7 @@
 
 <script>
   // ── REEMPLAZAR con la URL del Apps Script desplegado ──
-  const APPS_SCRIPT_URL = "REEMPLAZAR_CON_URL_DEL_APPS_SCRIPT";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzm9AS00tdvoJTVHBdQMUsxiI17rhRKLnYaQt8K9HU5F-OtUlBB2mf1n5TQFKZJ586E/exec";
 
   const MONTH_NAMES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
                        "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -307,6 +307,11 @@
 
   // ── Carga inicial de disponibilidad ──
   async function loadAvailability() {
+    // Inicializar mes/año ANTES del fetch para que el calendario siempre muestre bien
+    const initDate = getArgentinaDate();
+    calYear  = initDate.getUTCFullYear();
+    calMonth = initDate.getUTCMonth();
+
     try {
       const res  = await fetch(`${APPS_SCRIPT_URL}?action=availability`);
       const data = await res.json();
@@ -315,27 +320,23 @@
 
       document.getElementById("event-name").textContent = data.eventName;
 
-      // Construir índice fecha → info
       slotsByDate = {};
       data.slots.forEach(s => { slotsByDate[s.fecha] = s; });
 
-      // Arrancar calendario en el mes actual (Argentina)
-      const today = getArgentinaDate();
-      calYear  = today.getUTCFullYear();
-      calMonth = today.getUTCMonth();
-
-      document.getElementById("cal-loading").style.display   = "none";
+      document.getElementById("cal-loading").style.display    = "none";
       document.getElementById("calendar-wrapper").style.display = "block";
-
       renderCalendar();
 
     } catch (_) {
-      document.getElementById("cal-loading").style.display = "none";
+      document.getElementById("cal-loading").style.display    = "none";
       document.getElementById("calendar-wrapper").style.display = "block";
-      document.getElementById("cal-body").innerHTML =
-        `<p style="grid-column:1/-1;font-size:13px;color:var(--danger);padding:8px 0">
-           No se pudo cargar la disponibilidad. Recargá la página.
-         </p>`;
+      renderCalendar(); // igual renderizamos el calendario con el mes correcto
+      // Mostramos el error debajo de la grilla
+      document.getElementById("cal-body").insertAdjacentHTML("afterend",
+        `<p id="avail-error" style="font-size:13px;color:var(--danger);padding:8px 0;grid-column:1/-1">
+           No se pudo cargar la disponibilidad. Verificá que la URL del Apps Script esté configurada y recargá la página.
+         </p>`
+      );
     }
   }
 
