@@ -280,6 +280,8 @@
   let slotsByDate   = {}; // { "2026-06-09": { franjas: {...}, anyAvailable: bool } }
   let calYear       = 0;
   let calMonth      = 0;  // 0-indexed
+  let maxCalYear    = 0;
+  let maxCalMonth   = 0;
   let selectedFecha = "";
   let selectedHora  = "";
 
@@ -311,6 +313,10 @@
     const initDate = getArgentinaDate();
     calYear  = initDate.getUTCFullYear();
     calMonth = initDate.getUTCMonth();
+    // Límite de navegación: 90 días adelante
+    const limitDate = new Date(initDate.getTime() + 90 * 86400000);
+    maxCalYear  = limitDate.getUTCFullYear();
+    maxCalMonth = limitDate.getUTCMonth();
 
     try {
       const res  = await fetch(`${APPS_SCRIPT_URL}?action=availability`);
@@ -350,12 +356,14 @@
     document.getElementById("cal-month-label").textContent =
       `${MONTH_NAMES[calMonth]} ${calYear}`;
 
-    // Botón prev: deshabilitar si estamos en el mes actual
-    const argDate     = getArgentinaDate();
-    const thisYear    = argDate.getUTCFullYear();
-    const thisMonth   = argDate.getUTCMonth();
+    // Botones prev/next: deshabilitar en los extremos
+    const argDate   = getArgentinaDate();
+    const thisYear  = argDate.getUTCFullYear();
+    const thisMonth = argDate.getUTCMonth();
     document.getElementById("prev-month").disabled =
       (calYear === thisYear && calMonth === thisMonth);
+    document.getElementById("next-month").disabled =
+      (calYear > maxCalYear || (calYear === maxCalYear && calMonth >= maxCalMonth));
 
     let html    = "";
     let startDow = monFirstDow(firstDay.getUTCDay()); // celdas vacías al inicio
@@ -486,6 +494,7 @@
     renderCalendar();
   });
   document.getElementById("next-month").addEventListener("click", () => {
+    if (calYear > maxCalYear || (calYear === maxCalYear && calMonth >= maxCalMonth)) return;
     calMonth++;
     if (calMonth > 11) { calMonth = 0; calYear++; }
     selectedFecha = "";
