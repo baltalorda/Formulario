@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscripción al Evento</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:      #4f46e5;
+      --accent-dark: #3730a3;
+      --success:     #16a34a;
+      --danger:      #dc2626;
+      --text:        #1e1e2e;
+      --muted:       #6b7280;
+      --border:      #e5e7eb;
+      --bg:          #f9fafb;
+      --card:        #ffffff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      padding: 72px 20px 80px;
+      text-align: center;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 100px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 800; margin-bottom: 16px; }
+    .hero p  { font-size: 17px; opacity: .85; max-width: 480px; margin: 0 auto 32px; }
+
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 8px;
+    }
+    .hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      opacity: .9;
+    }
+    .hero-meta span::before { font-size: 16px; }
+    .hero-meta .m-dias::before  { content: "📅"; }
+    .hero-meta .m-hora::before  { content: "🕘"; }
+    .hero-meta .m-cupos::before { content: "👥"; }
+
+    /* ── Sección formulario ── */
+    .section {
+      max-width: 580px;
+      margin: -36px auto 60px;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      padding: 36px 32px;
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .card-subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── Campos del formulario ── */
+    .field { margin-bottom: 20px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 15px;
+      color: var(--text);
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+      background: white;
+    }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    }
+    .field input::placeholder { color: #9ca3af; }
+
+    /* ── Selector de días ── */
+    .days-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .day-btn {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 8px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+      position: relative;
+    }
+    .day-btn .day-name  { font-size: 14px; font-weight: 600; color: #374151; display: block; }
+    .day-btn .day-date  { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; }
+    .day-btn .day-badge {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .day-btn:hover:not(.full):not(.selected) { border-color: var(--accent); }
+    .day-btn.selected {
+      border-color: var(--accent);
+      background: #eef2ff;
+    }
+    .day-btn.selected .day-name  { color: var(--accent); }
+    .day-btn.full {
+      opacity: .5;
+      cursor: not-allowed;
+      background: #f9fafb;
+    }
+    .day-btn.full .day-badge { background: #fee2e2; color: #b91c1c; }
+
+    /* ── Franjas horarias ── */
+    #slots-wrapper { margin-bottom: 20px; display: none; }
+    .slots-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .slot-btn {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      text-align: center;
+      transition: all .15s;
+    }
+    .slot-btn:hover:not(.slot-full):not(.slot-selected) { border-color: var(--accent); }
+    .slot-btn.slot-selected {
+      border-color: var(--accent);
+      background: #eef2ff;
+      color: var(--accent);
+    }
+    .slot-btn.slot-full {
+      opacity: .45;
+      cursor: not-allowed;
+      background: #f9fafb;
+      text-decoration: line-through;
+    }
+
+    /* ── Botón enviar ── */
+    .btn-submit {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--accent-dark); }
+    .btn-submit:active:not(:disabled) { transform: scale(.99); }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ── Estados del formulario ── */
+    .msg {
+      display: none;
+      border-radius: 10px;
+      padding: 16px 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+    .msg.success { background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; }
+    .msg.error   { background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; }
+    .msg.info    { background: #eff6ff; border: 1.5px solid #93c5fd; color: #1d4ed8; }
+    .msg strong  { display: block; margin-bottom: 4px; }
+
+    /* ── Skeleton loader ── */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 8px;
+      height: 80px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 24px 20px; }
+      .days-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Hero ─── -->
+<div class="hero">
+  <div class="hero-tag">Inscripciones abiertas</div>
+  <h1 id="event-name">Cargando...</h1>
+  <p>Elegí el día y la franja horaria que mejor te quede. Los cupos son limitados.</p>
+  <div class="hero-meta">
+    <span class="m-dias">Lunes, Miércoles y Viernes</span>
+    <span class="m-hora">9:00 a 12:00 hs</span>
+    <span class="m-cupos">1 persona por turno</span>
+  </div>
+</div>
+
+<!-- ─── Formulario ─── -->
+<div class="section">
+  <div class="card">
+    <p class="card-title">Completá tu inscripción</p>
+    <p class="card-subtitle">Todos los campos son obligatorios. Recibirás un email de confirmación una vez aprobada.</p>
+
+    <form id="form" novalidate>
+
+      <div class="field">
+        <label for="nombre">Nombre completo</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ej: María González" autocomplete="name" required>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Ej: maria@email.com" autocomplete="email" required>
+      </div>
+
+      <span class="days-label">¿Qué día querés asistir?</span>
+      <div id="days-container" class="days-grid">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+
+      <div id="slots-wrapper">
+        <span class="slots-label">Elegí tu franja horaria</span>
+        <div id="slots-grid" class="slots-grid"></div>
+      </div>
+
+      <input type="hidden" id="selected-dia"  name="dia">
+      <input type="hidden" id="selected-hora" name="hora">
+
+      <button type="submit" class="btn-submit" id="btn-submit" disabled>
+        Solicitar inscripción
+      </button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+  </div>
+</div>
+
+<footer>
+  Las inscripciones están abiertas las 24 hs. Los cupos se actualizan en tiempo real.
+</footer>
+
+<script>
+  // ── CONFIGURAR ESTA URL al desplegar el Apps Script ──
+  const APPS_SCRIPT_URL = "REEMPLAZAR_CON_URL_DEL_APPS_SCRIPT";
+
+  let availability = {};
+  let selectedDia  = "";
+  let selectedHora = "";
+
+  // ── Carga inicial ──
+  async function loadAvailability() {
+    try {
+      const res  = await fetch(`${APPS_SCRIPT_URL}?action=availability`);
+      const data = await res.json();
+
+      if (!data.success) throw new Error("No se pudo obtener disponibilidad.");
+
+      availability = data.dias;
+      document.getElementById("event-name").textContent = data.eventName;
+      renderDays();
+    } catch (e) {
+      document.getElementById("days-container").innerHTML =
+        `<p style="color:#dc2626;font-size:14px;grid-column:1/-1">No se pudo cargar la disponibilidad. Recargá la página.</p>`;
+    }
+  }
+
+  function renderDays() {
+    const container = document.getElementById("days-container");
+    container.innerHTML = "";
+
+    Object.entries(availability).forEach(([dia, info]) => {
+      const allFull = Object.values(info.franjas).every(f => !f.disponible);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "day-btn" + (allFull ? " full" : "");
+      btn.dataset.dia = dia;
+      btn.innerHTML = `
+        <span class="day-name">${dia}</span>
+        <span class="day-date">${info.label}</span>
+        <span class="day-badge">${allFull ? "Sin cupos" : "Con cupos"}</span>`;
+
+      if (!allFull) {
+        btn.addEventListener("click", () => selectDay(dia, btn));
+      }
+
+      container.appendChild(btn);
+    });
+  }
+
+  function selectDay(dia, btnEl) {
+    document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("selected"));
+    btnEl.classList.add("selected");
+
+    selectedDia  = dia;
+    selectedHora = "";
+    document.getElementById("selected-dia").value  = dia;
+    document.getElementById("selected-hora").value = "";
+    updateSubmitBtn();
+    renderSlots(dia);
+  }
+
+  function renderSlots(dia) {
+    const wrapper = document.getElementById("slots-wrapper");
+    const grid    = document.getElementById("slots-grid");
+    const franjas = availability[dia].franjas;
+
+    grid.innerHTML = "";
+    wrapper.style.display = "block";
+
+    Object.entries(franjas).forEach(([hora, info]) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "slot-btn" + (!info.disponible ? " slot-full" : "");
+      btn.textContent = `${hora} hs`;
+      btn.dataset.hora = hora;
+
+      if (info.disponible) {
+        btn.addEventListener("click", () => selectSlot(hora, btn));
+      }
+
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectSlot(hora, btnEl) {
+    document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("slot-selected"));
+    btnEl.classList.add("slot-selected");
+
+    selectedHora = hora;
+    document.getElementById("selected-hora").value = hora;
+    updateSubmitBtn();
+  }
+
+  function updateSubmitBtn() {
+    const nombre = document.getElementById("nombre").value.trim();
+    const email  = document.getElementById("email").value.trim();
+    const ready  = nombre && email && selectedDia && selectedHora;
+    document.getElementById("btn-submit").disabled = !ready;
+  }
+
+  // Habilitar botón dinámicamente al escribir
+  ["nombre", "email"].forEach(id => {
+    document.getElementById(id).addEventListener("input", updateSubmitBtn);
+  });
+
+  // ── Envío del formulario ──
+  document.getElementById("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById("nombre").value.trim();
+    const email  = document.getElementById("email").value.trim();
+    const dia    = document.getElementById("selected-dia").value;
+    const hora   = document.getElementById("selected-hora").value;
+
+    if (!nombre || !email || !dia || !hora) {
+      showMsg("error", "Completá todos los campos antes de enviar.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showMsg("error", "El email ingresado no es válido.");
+      return;
+    }
+
+    const btn = document.getElementById("btn-submit");
+    btn.disabled    = true;
+    btn.textContent = "Enviando...";
+    hideMsg();
+
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ nombre, email, dia, hora }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showMsg("success",
+          "<strong>¡Solicitud enviada!</strong>" +
+          "Revisá tu email — te avisamos cuando sea aprobada. " +
+          `Turno solicitado: ${dia} a las ${hora} hs.`
+        );
+        document.getElementById("form").reset();
+        document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("selected"));
+        document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("slot-selected"));
+        document.getElementById("slots-wrapper").style.display = "none";
+        selectedDia  = "";
+        selectedHora = "";
+        // Recargar disponibilidad para reflejar el nuevo cupo ocupado
+        await loadAvailability();
+      } else {
+        showMsg("error", `<strong>No se pudo enviar.</strong>${data.error || "Intentá de nuevo."}`);
+      }
+
+    } catch (err) {
+      showMsg("error", "<strong>Error de conexión.</strong>Verificá tu internet e intentá de nuevo.");
+    } finally {
+      btn.textContent = "Solicitar inscripción";
+      updateSubmitBtn();
+    }
+  });
+
+  function showMsg(type, html) {
+    const el = document.getElementById("msg");
+    el.className  = `msg ${type}`;
+    el.innerHTML  = html;
+    el.style.display = "block";
+    el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function hideMsg() {
+    const el = document.getElementById("msg");
+    el.style.display = "none";
+  }
+
+  // ── Arrancar ──
+  loadAvailability();
+</script>
+</body>
+</html>
